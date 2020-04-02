@@ -1,13 +1,61 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
-version: 2.1
-# Use a package of configuration called an orb.
-orbs:
-  # Declare a dependency on the welcome-orb
-  welcome: circleci/welcome-orb@0.4.1
-# Orchestrate or schedule a set of jobs
-workflows:
-  # Name the workflow "welcome"
-  welcome:
-    # Run the welcome/run job in its own container
-    jobs:
-      - welcome/run
+
+
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: circleci/python:3.6.1
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+      - run:
+          name: install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Configure AWS Access Key ID
+          command: |
+            aws configure set aws_access_key_id \
+            ${AWS_ACCESS_KEY} \
+            --profile default
+      - run:
+          name: Configure AWS Secret Access Key
+          command: |
+            aws configure set aws_secret_access_key \
+            ${AWS_SECRET_KEY} \
+            --profile default
+      - run:
+          name: Configure AWS region
+          command: |
+            aws configure set region ${AWS_REGION} \
+            --profile default
+      - run:
+          name: Zip Artifact
+          command: |
+            zip index.zip index.js
+      - run:
+          name: Upload LambdaFunction to S3
+          command: |
+            aws s3 cp index.zip s3://${S3_BUCKET_ADDR}/index.zip
+      - run:
+          name: Update lambdaFunction code
+          command: |
+            aws lambda update-function-code --function-name myBillFunction --region us-east-1 --zip-file fileb://index.zip
