@@ -17,6 +17,7 @@ exports.emailService = function (event, context, callback) {
     let expirationTime = (currentTime + ttl);
     var time = process.env.ttl;
     //console.log(typeof process.env.ttl);
+    // Testing cicd....
     var integer = parseInt(time);    // NaN (Not a Number)
     
     var emailParams = {
@@ -55,6 +56,7 @@ exports.emailService = function (event, context, callback) {
         TableName: 'csye-6225',
         Key: {
             'Id': { S: messageDataJson.Email },
+            'Email': { S: messageDataJson.Email },
         },
     };
     // first get item and check if email exists
