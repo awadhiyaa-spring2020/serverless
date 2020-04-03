@@ -16,7 +16,7 @@ exports.emailService = function (event, context, callback) {
     let ttl = time * 60 * 1000;
     let expirationTime = (currentTime + ttl);
     var time = process.env.ttl;
-    console.log(typeof process.env.ttl);
+    //console.log(typeof process.env.ttl);
     var integer = parseInt(time);    // NaN (Not a Number)
     
     var emailParams = {
@@ -43,17 +43,18 @@ exports.emailService = function (event, context, callback) {
         Source: "csye6225@" + process.env.DOMAIN_NAME /* required */
     };
     let putParams = {
-        TableName: "csye6225",
+        TableName: "csye-6225",
         Item: {
-            id: { S: messageDataJson.Email },
-            resetlink: { S: messageDataJson.link.toString() },
-            ttl: { N: expirationTime.toString() }
+             'Id': { S: messageDataJson.Email },
+            'Email': { S: messageDataJson.Email },
+            'resetlink': { S: messageDataJson.link.toString() },
+            'ttl': { N: expirationTime.toString() }
         }
     };
     let queryParams = {
-        TableName: 'csye6225',
+        TableName: 'csye-6225',
         Key: {
-            'id': { S: messageDataJson.Email }
+            'Id': { S: messageDataJson.Email },
         },
     };
     // first get item and check if email exists
@@ -62,7 +63,7 @@ exports.emailService = function (event, context, callback) {
     // if ttl is greater than current time do nothing,
     // else send email
     ddb.getItem(queryParams, (err, data) => {
-        if (err) console.log(err)
+        if (err) console.log("hii get",err)
         else {
             // console.log('getItemttl: '+JSON.stringify(data, null, 2));
             let jsonData = JSON.stringify(data)
@@ -94,7 +95,7 @@ exports.emailService = function (event, context, callback) {
                 if (curr > ttl) {
                     console.log("not null 1");
                     ddb.putItem(putParams, (err, data) => {
-                        if (err) console.log(err);
+                        if (err) console.log("hii 2",err)
                         else {
                             console.log("hello");
                             console.log(data);
